@@ -1,10 +1,11 @@
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
-import { IToDo, toDoState } from "../atom";
+import { boardOrderState, IToDo, toDoState } from "../atom";
 import DraggableCard from "./DraggableCard";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useSetRecoilState } from "recoil";
+import { IoIosMenu, IoIosClose } from "react-icons/io";
 
 const Wrapper = styled.div<{ isDragging: boolean }>`
   width: 200px;
@@ -23,11 +24,46 @@ const Wrapper = styled.div<{ isDragging: boolean }>`
   flex-direction: column;
 `;
 
+const Header = styled.div`
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 10px;
+`;
+
 const Title = styled.span`
-  text-align: center;
   width: 100%;
   font-size: 18px;
   font-weight: 400;
+`;
+
+const Handle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 24px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const Delete = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+
+  margin-left: 5px;
+
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const Form = styled.form`
@@ -86,6 +122,7 @@ interface IForm {
 
 function Board({ boardId, toDos, index }: IBoard) {
   const setToDos = useSetRecoilState(toDoState);
+  const setOrder = useSetRecoilState(boardOrderState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const onValid = ({ toDo }: IForm) => {
     const newToDo = {
@@ -100,17 +137,42 @@ function Board({ boardId, toDos, index }: IBoard) {
     });
     setValue("toDo", "");
   };
+  const deleteBoard = (e: React.MouseEvent<HTMLElement>) => {
+    const element = e.target as HTMLElement;
+    const board = element.className;
+    const boardId = Object(board).animVal;
+
+    setToDos((allBoards) => {
+      const copy = { ...allBoards };
+      delete copy[boardId];
+      return copy;
+    });
+
+    setOrder((order) => {
+      const index = order.indexOf(boardId);
+      const copy = [...order];
+      copy.splice(index, 1);
+      return copy;
+    });
+  };
   return (
     <Draggable draggableId={"Board_" + boardId} index={index}>
       {(provided, snapshot) => (
         <Wrapper
           isDragging={snapshot.isDragging}
           ref={provided.innerRef}
-          {...provided.dragHandleProps}
           {...provided.draggableProps}
           datatype="Board"
         >
-          <Title>{boardId}</Title>
+          <Header>
+            <Title>{boardId}</Title>
+            <Handle {...provided.dragHandleProps}>
+              <IoIosMenu />
+            </Handle>
+            <Delete onClick={deleteBoard}>
+              <IoIosClose className={boardId} />
+            </Delete>
+          </Header>
           <Form onSubmit={handleSubmit(onValid)}>
             <Input
               {...register("toDo", { required: true })}

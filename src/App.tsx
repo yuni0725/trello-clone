@@ -74,6 +74,7 @@ function App() {
     const { type, destination, source } = dragEndInfo;
     if (!destination) return;
 
+    console.log(dragEndInfo);
     if (type === "Board") {
       setBoardOrder((order) => {
         const orderCopy = [...order];
