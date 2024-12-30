@@ -121,17 +121,16 @@ function App() {
   const onAddBoard = () => {
     const newBoardName = prompt("Write a new category name");
     if (newBoardName) {
+      if (boardOrder.includes(newBoardName)) {
+        alert("Category cannot be duplicated!");
+      }
       setToDos((allBoards) => {
         return { ...allBoards, [newBoardName]: [] };
       });
 
-      console.log(toDos);
-
       setBoardOrder((order) => {
         return [...order, newBoardName];
       });
-
-      console.log(boardOrder);
     }
   };
   useEffect(() => {
